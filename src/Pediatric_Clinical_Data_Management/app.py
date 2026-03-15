@@ -1,1 +1,270 @@
-// code
+
+from bson import ObjectId
+import streamlit as st
+from datetime import datetime
+from db import get_database
+from services import (
+    calculate_age_in_months, calculate_growth_percentile, 
+    check_milestone_delay, check_immunization_delay, check_who_growth,
+    calculate_bmi, generate_recommendation
+)
+
+# Database Setup
+db = get_database()
+
+patients_col = db["patients"]
+growth_col = db["growth"]
+immunization_col = db["immunization"]
+milestone_col = db["milestones"]
+alert_col = db["alerts"]
+
+# UI Layout
+st.set_page_config(page_title="M3 Pediatric System", layout="wide")
+
+st.title("M3 - Pediatric Clinical Data System")
+st.markdown("---")
+
+menu_options = [
+    "Add Patient",
+    "Add Growth Record",
+    "Add Immunization",
+    "Add Milestone",
+    "View Patients",
+    "View Patient Details",
+    "View Alerts"
+]
+
+# initialize session menu
+if "menu" not in st.session_state:
+    st.session_state.menu = "View Patients"
+
+menu = st.sidebar.selectbox(
+    "Select Module",
+    menu_options,
+    index=menu_options.index(st.session_state.menu)
+)
+
+st.session_state.menu = menu
+
+
+# ADD PATIENT
+if menu == "Add Patient":
+
+    st.header("Add New Pediatric Patient")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        name = st.text_input("Child Name")
+        gender = st.selectbox("Gender", ["Male", "Female"])
+
+    with col2:
+        dob = st.date_input("Date of Birth")
+
+    if st.button("Save Patient"):
+
+        if name.strip() == "":
+            st.error("Patient name cannot be empty")
+            st.stop()
+
+        age_months = calculate_age_in_months(dob)
+
+        patients_col.insert_one({
+            "name": name.strip(),
+            "dob": dob.strftime("%Y-%m-%d"),
+            "gender": gender,
+            "age_months": age_months,
+            "created_at": datetime.now()
+        })
+
+        st.success("Patient saved successfully")
+
+
+# ADD GROWTH
+elif menu == "Add Growth Record":
+
+    st.header("Add Growth Measurement")
+
+
+# ADD IMMUNIZATION
+elif menu == "Add Immunization":
+
+    st.header("Add Immunization Record")
+
+
+# ADD MILESTONE
+elif menu == "Add Milestone":
+
+    st.header("Add Developmental Milestone")
+
+
+# VIEW PATIENTS
+elif menu == "View Patients":
+
+    st.header("Patient Records")
+
+
+# VIEW PATIENTS DETAILS PAGE
+elif menu == "View Patient Details":
+
+    st.header("Patient Complete Record")
+
+    patient_list = list(patients_col.find())
+    if len(patient_list) == 0:
+        st.warning("No patients found")
+    else:
+        patient_dict = {p["name"]: p["_id"] for p in patient_list}
+
+        if "selected_patient" in st.session_state:
+            selected_patient = st.session_state["selected_patient"]
+        else:
+            selected_name = st.selectbox("Select Patient", list(patient_dict.keys()))
+            selected_patient = patient_dict[selected_name]
+
+        st.markdown("---")
+
+        patient_info = patients_col.find_one({"_id": selected_patient})
+
+        st.subheader("Patient Profile")
+
+        patient_info.pop("_id", None)
+
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("👶 Name", patient_info["name"])
+        col2.metric("🧑 Gender", patient_info["gender"])
+        col3.metric("📅 Age (Months)", patient_info["age_months"])
+        col4.metric("🎂 DOB", patient_info["dob"])
+
+        st.markdown("---")
+
+        # HEALTH ALERT BANNER
+        immunization_delays = list(immunization_col.find({
+            "patient_id": selected_patient,
+            "delayed": True
+        }))
+
+        milestone_delays = list(milestone_col.find({
+            "patient_id": selected_patient,
+            "delayed": True
+        }))
+
+        total_alerts = len(immunization_delays) + len(milestone_delays)
+        if total_alerts > 0:
+            st.error(f"⚠ {total_alerts} Health Alerts Detected")
+        else:
+            st.success("✅ No Health Alerts")
+
+        # GROWTH RECORDS
+        st.subheader("Growth Records")
+
+        growth_records = list(growth_col.find({"patient_id": selected_patient}))
+        if growth_records:
+            for g in growth_records:
+                g.pop("_id", None)
+                g.pop("patient_id", None)
+                if g.get("weight_status") == "Underweight":
+                    st.warning(f"⚠ Underweight detected on {g['recorded_at']}")
+
+            st.dataframe(growth_records)
+
+        else:
+            st.info("No growth records found")
+
+        st.markdown("---")
+
+        # IMMUNIZATION RECORDS
+        st.subheader("Immunization Records")
+
+        immunization_records = list(immunization_col.find({"patient_id": selected_patient}))
+        if immunization_records:
+            for i in immunization_records:
+                i.pop("_id", None)
+                i.pop("patient_id", None)
+
+            st.dataframe(immunization_records)
+
+        else:
+            st.info("No immunization records found")
+
+        st.markdown("---")
+
+        # MILESTONE RECORDS
+        st.subheader("Milestone Records")
+
+        milestone_records = list(milestone_col.find({"patient_id": selected_patient}))
+        if milestone_records:
+            for m in milestone_records:
+                m.pop("_id", None)
+                m.pop("patient_id", None)
+
+            st.dataframe(milestone_records)
+
+        else:
+            st.info("No milestone records found")
+
+        st.markdown("---")
+
+        # IMMUNIZATION DELAYS
+        st.subheader("Immunization Delays")
+
+        if immunization_delays:
+            h1, h2, h3, h4 = st.columns([3,3,2,1])
+            h1.write("Vaccine Name")
+            h2.write("Scheduled Date")
+            h3.write("Status")
+            h4.write("Resolve")
+
+            st.markdown("---")
+
+            for record in immunization_delays:
+                c1, c2, c3, c4 = st.columns([3,3,2,1])
+                c1.write(record["vaccine_name"])
+                c2.write(record["scheduled_date"])
+                c3.markdown("🔴 **Active**")
+
+                if c4.button("Resolve", key=f"imm_{record['_id']}"):
+                    immunization_col.update_one(
+                        {"_id": record["_id"]},
+                        {"$set": {"delayed": False}}
+                    )
+
+                    st.success("Immunization delay resolved")
+                    st.rerun()
+
+        else:
+            st.success("No immunization delays")
+
+        st.markdown("---")
+
+        # MILESTONE DELAYS
+        st.subheader("Milestone Delays")
+
+        if milestone_delays:
+            h1, h2, h3, h4 = st.columns([3,2,2,2])
+            h1.write("Milestone Name")
+            h2.write("Expected Age")
+            h3.write("Achieved Age")
+            h4.write("Status")
+
+            st.markdown("---")
+
+            for record in milestone_delays:
+                c1, c2, c3, c4 = st.columns([3,2,2,2])
+                c1.write(record["milestone_name"])
+                c2.write(f"{record['expected_age']} months")
+                c3.write(f"{record['achieved_age']} months")
+                c4.markdown("🔴 **Delayed**")
+
+        else:
+            st.success("No milestone delays")
+
+    if st.button("⬅ Back to Patients"):
+        st.session_state.menu = "View Patients"
+        st.rerun()
+
+
+# VIEW ALERTS PAGE (ONLY ACTIVE ALERTS)
+elif menu == "View Alerts":
+
+    st.header("Generated Alerts")
+    
