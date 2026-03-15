@@ -243,6 +243,49 @@ elif menu == "View Patients":
 
     st.header("Patient Records")
 
+    records = list(patients_col.find())
+
+    if len(records) == 0:
+        st.warning("No patients found")
+
+    else:
+        h1, h2, h3, h4, h5, h6 = st.columns([2,2,2,2,2,1])
+        h1.write("Name")
+        h2.write("DOB")
+        h3.write("Gender")
+        h4.write("Age (Months)")
+        h5.write("Created At")
+        h6.write("Delete")
+
+        st.markdown("---")
+
+        for patient in records:
+            c1, c2, c3, c4, c5, c6 = st.columns([2,2,2,2,2,1])
+
+            # CLICKABLE NAME
+            if c1.button(patient["name"], key=f"name_{patient['_id']}"):
+                st.session_state.selected_patient = patient["_id"]
+                st.session_state.menu = "View Patient Details"
+                st.rerun()
+
+            c2.write(patient["dob"])
+            c3.write(patient["gender"])
+            c4.write(patient["age_months"])
+            c5.write(patient["created_at"].strftime("%Y-%m-%d"))
+
+            if c6.button("Delete", key=f"del_{patient['_id']}"):
+
+                pid = patient["_id"]
+
+                patients_col.delete_one({"_id": pid})
+                growth_col.delete_many({"patient_id": pid})
+                immunization_col.delete_many({"patient_id": pid})
+                milestone_col.delete_many({"patient_id": pid})
+                alert_col.delete_many({"patient_id": pid})
+
+                st.success(f"{patient['name']} deleted successfully")
+                st.rerun()
+
 
 # VIEW PATIENTS DETAILS PAGE
 elif menu == "View Patient Details":
