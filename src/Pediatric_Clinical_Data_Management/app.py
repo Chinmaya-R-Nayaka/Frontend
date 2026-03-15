@@ -89,12 +89,102 @@ elif menu == "Add Growth Record":
 # ADD IMMUNIZATION
 elif menu == "Add Immunization":
 
+
+    st.header("Add Immunization Record")
+
+    # Fetch patients
+    patient_list = list(patients_col.find())
+
+    if len(patient_list) == 0:
+        st.warning("No patients found. Please add a patient first.")
+        st.stop()
+
+    # Create name → id mapping
+    patient_dict = {p["name"]: p["_id"] for p in patient_list}
+
+    selected_name = st.selectbox("Select Patient", list(patient_dict.keys()))
+    selected_patient = patient_dict[selected_name]
+
+    vaccine_name = st.text_input("Vaccine Name")
+    scheduled_date = st.date_input("Scheduled Date")
+
+    if st.button("Save Immunization"):
+
+        if vaccine_name.strip() == "":
+            st.error("Please enter vaccine name")
+            st.stop()
+
+        delayed = check_immunization_delay(scheduled_date)
+
+        immunization_col.insert_one({
+            "patient_id": selected_patient,
+            "patient_name": selected_name,
+            "vaccine_name": vaccine_name,
+            "scheduled_date": scheduled_date.strftime("%Y-%m-%d"),
+            "delayed": delayed,
+            "created_at": datetime.now()
+        })
+
+        # Generate alert if delayed
+        if delayed:
+            alert_col.insert_one({
+                "patient_id": selected_patient,
+                "type": "Immunization Delay",
+                "status": "Active",
+                "created_at": datetime.now()
+            })
+
+        st.success("Immunization record added successfully")
     st.header("Add Immunization Record")
 
 
 # ADD MILESTONE
 elif menu == "Add Milestone":
 
+
+    st.header("Add Developmental Milestone")
+
+    patient_list = list(patients_col.find())
+
+    if len(patient_list) == 0:
+        st.warning("No patients found. Please add a patient first.")
+        st.stop()
+
+    # name -> id mapping
+    patient_dict = {p["name"]: str(p["_id"]) for p in patient_list}
+
+    selected_name = st.selectbox("Select Patient", list(patient_dict.keys()))
+
+    # geting ObjectId
+    selected_patient = ObjectId(patient_dict[selected_name])
+
+    milestone_name = st.text_input("Milestone Name")
+    expected_age = st.number_input("Expected Age (Months)", min_value=0)
+    achieved_age = st.number_input("Achieved Age (Months)", min_value=0)
+
+    if st.button("Save Milestone"):
+
+        delayed = check_milestone_delay(expected_age, achieved_age)
+
+        milestone_col.insert_one({
+            "patient_id": selected_patient,
+            "patient_name": selected_name,
+            "milestone_name": milestone_name,
+            "expected_age": expected_age,
+            "achieved_age": achieved_age,
+            "delayed": delayed,
+            "created_at": datetime.now()
+        })
+
+        if delayed:
+            alert_col.insert_one({
+                "patient_id": selected_patient,
+                "type": "Milestone Delay",
+                "status": "Active",
+                "created_at": datetime.now()
+            })
+
+        st.success("Milestone saved successfully")
     st.header("Add Developmental Milestone")
 
 
