@@ -85,6 +85,56 @@ elif menu == "Add Growth Record":
 
     st.header("Add Growth Measurement")
 
+    patient_list = list(patients_col.find())
+    if len(patient_list) == 0:
+        st.warning("No patients found")
+        st.stop()
+
+    patient_dict = {p["name"]: p["_id"] for p in patient_list}
+
+    selected_name = st.selectbox("Select Patient", list(patient_dict.keys()))
+    selected_patient = patient_dict[selected_name]
+
+    weight = st.number_input("Weight (kg)", min_value=0.0)
+    height = st.number_input("Height (cm)", min_value=0.0)
+
+    if st.button("Save Growth Record"):
+
+        patient = patients_col.find_one({"_id": selected_patient})
+        age_months = patient["age_months"]
+        percentile = calculate_growth_percentile(weight, height)
+        weight_status, height_status = check_who_growth(age_months, weight, height)
+        bmi, bmi_status = calculate_bmi(weight, height)
+        recommendations = generate_recommendation(weight_status, height_status, bmi_status)
+
+        growth_col.insert_one({
+            "patient_id": selected_patient,
+            "patient_name": selected_name,
+            "weight": weight,
+            "height": height,
+            "bmi": bmi,
+            "bmi_status": bmi_status,
+            "weight_status": weight_status,
+            "height_status": height_status,
+            "percentile": percentile,
+            "recommendations": recommendations,
+            "recorded_at": datetime.now()
+        })
+
+        st.success("Growth record added successfully")
+
+        st.subheader("Growth Analysis")
+
+        st.write("BMI:", bmi)
+        st.write("BMI Status:", bmi_status)
+        st.write("Weight Status:", weight_status)
+        st.write("Height Status:", height_status)
+
+        st.subheader("Doctor Recommendations")
+
+        for r in recommendations:
+            st.warning(r)
+
 
 # ADD IMMUNIZATION
 elif menu == "Add Immunization":
@@ -296,7 +346,6 @@ elif menu == "View Patient Details":
 
         # IMMUNIZATION DELAYS
         st.subheader("Immunization Delays")
-
         if immunization_delays:
             h1, h2, h3, h4 = st.columns([3,3,2,1])
             h1.write("Vaccine Name")
