@@ -450,4 +450,46 @@ elif menu == "View Patient Details":
 elif menu == "View Alerts":
 
     st.header("Generated Alerts")
+    display_data = []
+
+    # IMMUNIZATION DELAYS
+    immunization_delays = list(immunization_col.find({"delayed": True}))
+
+    for record in immunization_delays:
+        patient = patients_col.find_one({"_id": record["patient_id"]})
+        if patient:
+            patient_name = patient["name"]
+        else:
+            patient_name = "Unknown"
+
+        display_data.append({
+            "Patient Name": patient_name,
+            "Alert Type": "Immunization Delay",
+            "Detail": record.get("vaccine_name", "Unknown"),
+            "Scheduled Date": record.get("scheduled_date", "Unknown")
+        })
+
+    # MILESTONE DELAYS
+    # milestone_delays = list(milestone_col.find({"delayed": True}))
+    # for record in milestone_delays:
+    #     patient = patients_col.find_one({"_id": record["patient_id"]})
+    #     if patient:
+    #         patient_name = patient["name"]
+    #     else:
+    #         patient_name = "Unknown"
+
+    #     display_data.append({
+    #         "Patient Name": patient_name,
+    #         "Alert Type": "Milestone Delay",
+    #         "Detail": record.get("milestone_name", "Unknown"),
+    #         "Scheduled Date": f"{record.get('expected_age','?')} months"
+    #     })
+
+
+    # DISPLAY TABLE
+    if display_data:
+        st.dataframe(display_data, use_container_width=True)
+    else:
+        st.success("✅ No Active Alerts")
+
     
