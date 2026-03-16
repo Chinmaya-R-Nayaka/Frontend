@@ -18,6 +18,7 @@ st.session_state.setdefault("page", "login")
 st.session_state.setdefault("role", None)
 
 # ---------------- HARD REDIRECT AFTER LOGIN ----------------
+# If the user is logged in, redirect them directly to their role-based dashboard
 if st.session_state.logged_in:
     if st.session_state.role == "Patient":
         patient_dashboard()
