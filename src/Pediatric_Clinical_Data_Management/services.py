@@ -28,4 +28,8 @@ def check_milestone_delay(expected_age, achieved_age):
     return achieved_age > expected_age
 
 
+def check_immunization_delay(scheduled_date):
+    return datetime.now().date() > scheduled_date
+
+
 
