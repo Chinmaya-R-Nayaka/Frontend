@@ -136,7 +136,7 @@ elif menu == "Add Growth Record":
         for r in recommendations:
             st.warning(r)
 
-
+# Added explanation for authentication routing
 # ADD IMMUNIZATION
 elif menu == "Add Immunization":
 
