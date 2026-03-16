@@ -1,10 +1,15 @@
+# Import Streamlit library for building the web UI
 import streamlit as st
+# Import authentication pages
 from auth.login import login_page
 from auth.signup import signup_page
+
+# Import dashboards for different user roles
 from dashboards.patient_dashboard import patient_dashboard
 from dashboards.doctor_dashboard import doctor_dashboard
 from dashboards.admin_dashboard import admin_dashboard
 # ---------------- PAGE CONFIG ----------------
+# Configure Streamlit app settings such as page title and layout
 st.set_page_config(page_title="MediCare", layout="wide")
 
 # ---------------- SESSION STATE INIT ----------------
@@ -24,7 +29,7 @@ if st.session_state.logged_in:
         admin_dashboard()
         st.stop()
 
-# ---------------- AUTH ROUTING ----------------
+# ---------------- AUTH ROUTING ---------------------------
 if st.session_state.page == "login":
     login_page()
 elif st.session_state.page == "signup":
