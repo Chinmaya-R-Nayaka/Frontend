@@ -192,7 +192,6 @@ elif menu == "Add Immunization":
 # ADD MILESTONE
 elif menu == "Add Milestone":
 
-
     st.header("Add Developmental Milestone")
 
     patient_list = list(patients_col.find())
@@ -236,7 +235,6 @@ elif menu == "Add Milestone":
             })
 
         st.success("Milestone saved successfully")
-    st.header("Add Developmental Milestone")
 
 
 # VIEW PATIENTS
