@@ -48,3 +48,19 @@ def check_who_growth(age_months, weight, height):
     return weight_status, height_status
 
 
+def calculate_bmi(weight, height_cm):
+    height_m = height_cm / 100
+    bmi = weight / (height_m ** 2)
+
+    if bmi < 14:
+        status = "Severely Underweight"
+    elif bmi < 16:
+        status = "Underweight"
+    elif bmi < 18:
+        status = "Normal"
+    else:
+        status = "Overweight"
+
+    return round(bmi, 2), status
+
+
