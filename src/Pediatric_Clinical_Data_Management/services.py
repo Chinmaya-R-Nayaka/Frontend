@@ -64,3 +64,21 @@ def calculate_bmi(weight, height_cm):
     return round(bmi, 2), status
 
 
+def generate_recommendation(weight_status, height_status, bmi_status):
+
+    recommendations = []
+
+    if weight_status == "Underweight":
+        recommendations.append("Increase nutritional intake")
+
+    if height_status == "Stunted":
+        recommendations.append("Monitor height growth and nutrition")
+
+    if bmi_status == "Severely Underweight":
+        recommendations.append("Immediate pediatric consultation required")
+
+    if len(recommendations) == 0:
+        recommendations.append("Growth is normal")
+
+    return recommendations
+
