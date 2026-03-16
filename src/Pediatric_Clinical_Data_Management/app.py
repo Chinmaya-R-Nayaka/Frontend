@@ -1,7 +1,10 @@
-
+# Import ObjectId to work with MongoDB document IDs
 from bson import ObjectId
+# Import Streamlit for building the web interface
 import streamlit as st
+# Import datetime for storing timestamps
 from datetime import datetime
+# Import database connection function
 from db import get_database
 from services import (
     calculate_age_in_months, calculate_growth_percentile, 
