@@ -22,3 +22,10 @@ def calculate_growth_percentile(weight, height):
         return 95
     else:
         return 50
+
+
+def check_milestone_delay(expected_age, achieved_age):
+    return achieved_age > expected_age
+
+
+
