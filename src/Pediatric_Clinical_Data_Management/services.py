@@ -31,5 +31,20 @@ def check_milestone_delay(expected_age, achieved_age):
 def check_immunization_delay(scheduled_date):
     return datetime.now().date() > scheduled_date
 
+def check_who_growth(age_months, weight, height):
+
+    closest_age = min(WHO_STANDARDS.keys(), key=lambda x: abs(x-age_months))
+    standard = WHO_STANDARDS[closest_age]
+
+    weight_status = "Normal"
+    height_status = "Normal"
+
+    if weight < standard["weight"] * 0.9:
+        weight_status = "Underweight"
+
+    if height < standard["height"] * 0.9:
+        height_status = "Stunted"
+
+    return weight_status, height_status
 
 
