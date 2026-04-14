@@ -2,6 +2,7 @@
 import streamlit as st
 from components.sidebar import sidebar
 from components.charts import patient_line_chart, appointment_donut_chart
+from views.modules.M3.pediatric_system import run_pediatric_system
 
 # All categories and their modules
 CATEGORIES = {
@@ -130,9 +131,14 @@ CATEGORIES = {
 }
 
 def patient_dashboard():
-    st.session_state.setdefault("view", "main")
-    st.session_state.setdefault("selected_category", None)
-    st.session_state.setdefault("selected_module", None)
+    if "view" not in st.session_state:
+        st.session_state.view = "main"
+    if "selected_category" not in st.session_state:
+        st.session_state.selected_category = None
+    if "selected_module" not in st.session_state:
+        st.session_state.selected_module = None
+    if "last_sidebar" not in st.session_state:
+        st.session_state.last_sidebar = None
 
     # Sidebar
     selected = sidebar([
@@ -148,15 +154,17 @@ def patient_dashboard():
         "I - Integrated Capstone Projects"
     ])
 
-    # Handle sidebar selection
-    if selected != "Dashboard" and selected in CATEGORIES:
-        st.session_state.selected_category = selected
-        st.session_state.view = "category"
-        st.session_state.selected_module = None
-    elif selected == "Dashboard":
-        st.session_state.view = "main"
-        st.session_state.selected_category = None
-        st.session_state.selected_module = None
+   # Handle sidebar selection
+    if selected != st.session_state.last_sidebar:
+        st.session_state.last_sidebar = selected
+        if selected != "Dashboard" and selected in CATEGORIES:
+            st.session_state.selected_category = selected
+            st.session_state.view = "category"
+            st.session_state.selected_module = None
+        elif selected == "Dashboard":
+            st.session_state.view = "main"
+            st.session_state.selected_category = None
+            st.session_state.selected_module = None
 
     # ROUTER
     if st.session_state.view == "category":
@@ -359,8 +367,13 @@ def show_category_view():
 
 def show_module_detail():
     code, name, desc, tables, records = st.session_state.selected_module
+    # 🚀 REDIRECT FOR A3 MODULE
+    if code == "A3":
+        run_pediatric_system()
+        return
+        
     cat_key = st.session_state.selected_category
-    
+        
     # Breadcrumb
     st.markdown(f"Category {cat_key.split('-')[0].strip()} > {name}")
     st.markdown(f"# {name}")

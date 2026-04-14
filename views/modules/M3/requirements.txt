@@ -1,0 +1,10 @@
+streamlit
+streamlit-option-menu
+pymongo
+python-dotenv
+fastapi
+uvicorn
+matplotlib
+pandas
+numpy
+requests
