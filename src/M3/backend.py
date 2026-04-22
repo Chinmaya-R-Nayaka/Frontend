@@ -4,8 +4,8 @@ from bson import ObjectId
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from views.modules.M3.db import get_database
-from views.modules.M3.models import (
+from src.M3.db import get_database
+from src.M3.models import (
     PatientCreate, PatientResponse,
     GrowthCreate, GrowthResponse,
     ImmunizationCreate, ImmunizationResponse,
@@ -14,7 +14,7 @@ from views.modules.M3.models import (
     MessageResponse,
 )
 
-from views.modules.M3.services import (
+from src.M3.services import (
     calculate_age_in_months,
     calculate_growth_percentile,
     check_who_growth,

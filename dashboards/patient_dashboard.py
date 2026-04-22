@@ -2,7 +2,7 @@
 import streamlit as st
 from components.sidebar import sidebar
 from components.charts import patient_line_chart, appointment_donut_chart
-from views.modules.M3.pediatric_system import run_pediatric_system
+from src.M3.pediatric_system import run_pediatric_system
 
 # All categories and their modules
 CATEGORIES = {
