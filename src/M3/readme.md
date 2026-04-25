@@ -1,5 +1,8 @@
 # Pediatric Clinical Data Management System (M3)
 
+**Live Demo:** https://m3-pediatric-clinical-data-management.streamlit.app/  
+**Backend API:**  https://m3-nx5f.onrender.com
+
 ## Overview
 
 The **Pediatric Clinical Data Management System (Module M3)** is a backend-driven healthcare system designed to manage, process, and analyze pediatric clinical data.
